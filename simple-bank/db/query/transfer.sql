@@ -32,20 +32,23 @@ ORDER BY created_at desc
 LIMIT $2
 OFFSET $3;
 
--- name: UpdateTransferToAccount :exec
+-- name: UpdateTransferToAccount :one
 UPDATE transfers 
 SET to_account_id = $2
-WHERE id = $1;
+WHERE id = $1
+RETURNING *;
 
--- name: UpdateTransferFromAccount :exec
+-- name: UpdateTransferFromAccount :one
 UPDATE transfers 
 SET amount = $2
-WHERE id = $1;
+WHERE id = $1
+RETURNING *;
 
--- name: UpdateTransferAmount :exec
+-- name: UpdateTransferAmount :one
 UPDATE transfers 
 SET amount = $2
-WHERE id = $1;
+WHERE id = $1
+RETURNING *;
 
 -- name: DeleteTransfer :exec
 DELETE FROM transfers 

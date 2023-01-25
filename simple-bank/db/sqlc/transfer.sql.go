@@ -195,10 +195,11 @@ func (q *Queries) ListTransfersToAccount(ctx context.Context, arg ListTransfersT
 	return items, nil
 }
 
-const updateTransferAmount = `-- name: UpdateTransferAmount :exec
+const updateTransferAmount = `-- name: UpdateTransferAmount :one
 UPDATE transfers 
 SET amount = $2
 WHERE id = $1
+RETURNING id, from_account_id, to_account_id, amount, created_at
 `
 
 type UpdateTransferAmountParams struct {
@@ -206,15 +207,24 @@ type UpdateTransferAmountParams struct {
 	Amount int64 `json:"amount"`
 }
 
-func (q *Queries) UpdateTransferAmount(ctx context.Context, arg UpdateTransferAmountParams) error {
-	_, err := q.db.ExecContext(ctx, updateTransferAmount, arg.ID, arg.Amount)
-	return err
+func (q *Queries) UpdateTransferAmount(ctx context.Context, arg UpdateTransferAmountParams) (Transfer, error) {
+	row := q.db.QueryRowContext(ctx, updateTransferAmount, arg.ID, arg.Amount)
+	var i Transfer
+	err := row.Scan(
+		&i.ID,
+		&i.FromAccountID,
+		&i.ToAccountID,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
-const updateTransferFromAccount = `-- name: UpdateTransferFromAccount :exec
+const updateTransferFromAccount = `-- name: UpdateTransferFromAccount :one
 UPDATE transfers 
 SET amount = $2
 WHERE id = $1
+RETURNING id, from_account_id, to_account_id, amount, created_at
 `
 
 type UpdateTransferFromAccountParams struct {
@@ -222,15 +232,24 @@ type UpdateTransferFromAccountParams struct {
 	Amount int64 `json:"amount"`
 }
 
-func (q *Queries) UpdateTransferFromAccount(ctx context.Context, arg UpdateTransferFromAccountParams) error {
-	_, err := q.db.ExecContext(ctx, updateTransferFromAccount, arg.ID, arg.Amount)
-	return err
+func (q *Queries) UpdateTransferFromAccount(ctx context.Context, arg UpdateTransferFromAccountParams) (Transfer, error) {
+	row := q.db.QueryRowContext(ctx, updateTransferFromAccount, arg.ID, arg.Amount)
+	var i Transfer
+	err := row.Scan(
+		&i.ID,
+		&i.FromAccountID,
+		&i.ToAccountID,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
-const updateTransferToAccount = `-- name: UpdateTransferToAccount :exec
+const updateTransferToAccount = `-- name: UpdateTransferToAccount :one
 UPDATE transfers 
 SET to_account_id = $2
 WHERE id = $1
+RETURNING id, from_account_id, to_account_id, amount, created_at
 `
 
 type UpdateTransferToAccountParams struct {
@@ -238,7 +257,15 @@ type UpdateTransferToAccountParams struct {
 	ToAccountID int64 `json:"to_account_id"`
 }
 
-func (q *Queries) UpdateTransferToAccount(ctx context.Context, arg UpdateTransferToAccountParams) error {
-	_, err := q.db.ExecContext(ctx, updateTransferToAccount, arg.ID, arg.ToAccountID)
-	return err
+func (q *Queries) UpdateTransferToAccount(ctx context.Context, arg UpdateTransferToAccountParams) (Transfer, error) {
+	row := q.db.QueryRowContext(ctx, updateTransferToAccount, arg.ID, arg.ToAccountID)
+	var i Transfer
+	err := row.Scan(
+		&i.ID,
+		&i.FromAccountID,
+		&i.ToAccountID,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
 }
