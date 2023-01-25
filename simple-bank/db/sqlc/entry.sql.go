@@ -35,6 +35,16 @@ func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry
 	return i, err
 }
 
+const deleteEntry = `-- name: DeleteEntry :exec
+DELETE FROM entries 
+WHERE id = $1
+`
+
+func (q *Queries) DeleteEntry(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteEntry, id)
+	return err
+}
+
 const getEntry = `-- name: GetEntry :one
 SELECT id, account_id, amount, created_at FROM entries
 WHERE id = $1 LIMIT 1
@@ -92,4 +102,36 @@ func (q *Queries) ListEntries(ctx context.Context, arg ListEntriesParams) ([]Ent
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateEntryAccount = `-- name: UpdateEntryAccount :exec
+UPDATE entries
+SET account_id = $2
+WHERE id = $1
+`
+
+type UpdateEntryAccountParams struct {
+	ID        int64 `json:"id"`
+	AccountID int64 `json:"account_id"`
+}
+
+func (q *Queries) UpdateEntryAccount(ctx context.Context, arg UpdateEntryAccountParams) error {
+	_, err := q.db.ExecContext(ctx, updateEntryAccount, arg.ID, arg.AccountID)
+	return err
+}
+
+const updateEntryAmount = `-- name: UpdateEntryAmount :exec
+UPDATE entries
+SET amount = $2
+WHERE id = $1
+`
+
+type UpdateEntryAmountParams struct {
+	ID     int64 `json:"id"`
+	Amount int64 `json:"amount"`
+}
+
+func (q *Queries) UpdateEntryAmount(ctx context.Context, arg UpdateEntryAmountParams) error {
+	_, err := q.db.ExecContext(ctx, updateEntryAmount, arg.ID, arg.Amount)
+	return err
 }
