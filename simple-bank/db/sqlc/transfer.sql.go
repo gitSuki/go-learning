@@ -222,18 +222,18 @@ func (q *Queries) UpdateTransferAmount(ctx context.Context, arg UpdateTransferAm
 
 const updateTransferFromAccount = `-- name: UpdateTransferFromAccount :one
 UPDATE transfers 
-SET amount = $2
+SET from_account_id = $2
 WHERE id = $1
 RETURNING id, from_account_id, to_account_id, amount, created_at
 `
 
 type UpdateTransferFromAccountParams struct {
-	ID     int64 `json:"id"`
-	Amount int64 `json:"amount"`
+	ID            int64 `json:"id"`
+	FromAccountID int64 `json:"from_account_id"`
 }
 
 func (q *Queries) UpdateTransferFromAccount(ctx context.Context, arg UpdateTransferFromAccountParams) (Transfer, error) {
-	row := q.db.QueryRowContext(ctx, updateTransferFromAccount, arg.ID, arg.Amount)
+	row := q.db.QueryRowContext(ctx, updateTransferFromAccount, arg.ID, arg.FromAccountID)
 	var i Transfer
 	err := row.Scan(
 		&i.ID,

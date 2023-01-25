@@ -40,7 +40,7 @@ RETURNING *;
 
 -- name: UpdateTransferFromAccount :one
 UPDATE transfers 
-SET amount = $2
+SET from_account_id = $2
 WHERE id = $1
 RETURNING *;
 

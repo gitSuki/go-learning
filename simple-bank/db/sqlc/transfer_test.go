@@ -121,3 +121,62 @@ func TestListTransfersInvolvingAccount(t *testing.T) {
 		require.Equal(t, account1.ID, transfer.FromAccountID)
 	}
 }
+
+func TestUpdateTransferFromAccount(t *testing.T) {
+	account1 := createRandomAccount(t)
+	account2 := createRandomAccount(t)
+	account3 := createRandomAccount(t)
+	transfer1 := createRandomTransfer(t, account1, account2)
+
+	arg := UpdateTransferFromAccountParams{
+		ID:            transfer1.ID,
+		FromAccountID: account3.ID,
+	}
+
+	transfer2, err := testQueries.UpdateTransferFromAccount(context.Background(), arg)
+	require.NoError(t, err)
+	require.Equal(t, transfer1.ID, transfer2.ID)
+	require.Equal(t, arg.FromAccountID, transfer2.FromAccountID)
+	require.Equal(t, transfer1.ToAccountID, transfer2.ToAccountID)
+	require.Equal(t, transfer1.Amount, transfer2.Amount)
+	require.Equal(t, transfer1.CreatedAt, transfer2.CreatedAt)
+}
+
+func TestUpdateTransferToAccount(t *testing.T) {
+	account1 := createRandomAccount(t)
+	account2 := createRandomAccount(t)
+	account3 := createRandomAccount(t)
+	transfer1 := createRandomTransfer(t, account1, account2)
+
+	arg := UpdateTransferToAccountParams{
+		ID:          transfer1.ID,
+		ToAccountID: account3.ID,
+	}
+
+	transfer2, err := testQueries.UpdateTransferToAccount(context.Background(), arg)
+	require.NoError(t, err)
+	require.Equal(t, transfer1.ID, transfer2.ID)
+	require.Equal(t, transfer1.FromAccountID, transfer2.FromAccountID)
+	require.Equal(t, arg.ToAccountID, transfer2.ToAccountID)
+	require.Equal(t, transfer1.Amount, transfer2.Amount)
+	require.Equal(t, transfer1.CreatedAt, transfer2.CreatedAt)
+}
+
+func TestUpdateTransferAmount(t *testing.T) {
+	account1 := createRandomAccount(t)
+	account2 := createRandomAccount(t)
+	transfer1 := createRandomTransfer(t, account1, account2)
+
+	arg := UpdateTransferAmountParams{
+		ID:     transfer1.ID,
+		Amount: util.RandomMoney(),
+	}
+
+	transfer2, err := testQueries.UpdateTransferAmount(context.Background(), arg)
+	require.NoError(t, err)
+	require.Equal(t, transfer1.ID, transfer2.ID)
+	require.Equal(t, transfer1.FromAccountID, transfer2.FromAccountID)
+	require.Equal(t, transfer1.ToAccountID, transfer2.ToAccountID)
+	require.Equal(t, arg.Amount, transfer2.Amount)
+	require.Equal(t, transfer1.CreatedAt, transfer2.CreatedAt)
+}
