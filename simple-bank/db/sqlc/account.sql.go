@@ -20,7 +20,7 @@ RETURNING id, owner, balance, currency, created_at
 
 type CreateAccountParams struct {
 	Owner    string `json:"owner"`
-	Balance  int32  `json:"balance"`
+	Balance  int64  `json:"balance"`
 	Currency string `json:"currency"`
 }
 
@@ -114,7 +114,7 @@ WHERE id = $1
 
 type UpdateAccountParams struct {
 	ID      int64 `json:"id"`
-	Balance int32 `json:"balance"`
+	Balance int64 `json:"balance"`
 }
 
 func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) error {
