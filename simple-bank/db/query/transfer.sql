@@ -28,3 +28,22 @@ WHERE from_account_id = $1
 OR to_account_id = $1
 LIMIT $1
 OFFSET $2;
+
+-- name: UpdateTransferToAccount :exec
+UPDATE transfers 
+SET to_account_id = $2
+WHERE id = $1;
+
+-- name: UpdateTransferFromAccount :exec
+UPDATE transfers 
+SET amount = $2
+WHERE id = $1;
+
+-- name: UpdateTransferAmount :exec
+UPDATE transfers 
+SET amount = $2
+WHERE id = $1;
+
+-- name: DeleteTransfer :exec
+DELETE FROM transfers 
+WHERE id = $1;

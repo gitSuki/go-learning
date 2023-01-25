@@ -37,6 +37,16 @@ func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) 
 	return i, err
 }
 
+const deleteTransfer = `-- name: DeleteTransfer :exec
+DELETE FROM transfers 
+WHERE id = $1
+`
+
+func (q *Queries) DeleteTransfer(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteTransfer, id)
+	return err
+}
+
 const getTransfer = `-- name: GetTransfer :one
 SELECT id, from_account_id, to_account_id, amount, created_at FROM transfers
 WHERE id = $1 LIMIT 1
@@ -177,4 +187,52 @@ func (q *Queries) ListTransfersToAccount(ctx context.Context, arg ListTransfersT
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateTransferAmount = `-- name: UpdateTransferAmount :exec
+UPDATE transfers 
+SET amount = $2
+WHERE id = $1
+`
+
+type UpdateTransferAmountParams struct {
+	ID     int64 `json:"id"`
+	Amount int64 `json:"amount"`
+}
+
+func (q *Queries) UpdateTransferAmount(ctx context.Context, arg UpdateTransferAmountParams) error {
+	_, err := q.db.ExecContext(ctx, updateTransferAmount, arg.ID, arg.Amount)
+	return err
+}
+
+const updateTransferFromAccount = `-- name: UpdateTransferFromAccount :exec
+UPDATE transfers 
+SET amount = $2
+WHERE id = $1
+`
+
+type UpdateTransferFromAccountParams struct {
+	ID     int64 `json:"id"`
+	Amount int64 `json:"amount"`
+}
+
+func (q *Queries) UpdateTransferFromAccount(ctx context.Context, arg UpdateTransferFromAccountParams) error {
+	_, err := q.db.ExecContext(ctx, updateTransferFromAccount, arg.ID, arg.Amount)
+	return err
+}
+
+const updateTransferToAccount = `-- name: UpdateTransferToAccount :exec
+UPDATE transfers 
+SET to_account_id = $2
+WHERE id = $1
+`
+
+type UpdateTransferToAccountParams struct {
+	ID          int64 `json:"id"`
+	ToAccountID int64 `json:"to_account_id"`
+}
+
+func (q *Queries) UpdateTransferToAccount(ctx context.Context, arg UpdateTransferToAccountParams) error {
+	_, err := q.db.ExecContext(ctx, updateTransferToAccount, arg.ID, arg.ToAccountID)
+	return err
 }
