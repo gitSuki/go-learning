@@ -27,10 +27,10 @@ OFFSET $3;
 -- name: ListTransfersInvolvingAccount :many
 SELECT * FROM transfers
 WHERE from_account_id = $1
-OR to_account_id = $2
+OR to_account_id = $1
 ORDER BY created_at desc
-LIMIT $3
-OFFSET $4;
+LIMIT $2
+OFFSET $3;
 
 -- name: UpdateTransferToAccount :exec
 UPDATE transfers 
