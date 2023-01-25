@@ -104,10 +104,11 @@ func (q *Queries) ListEntries(ctx context.Context, arg ListEntriesParams) ([]Ent
 	return items, nil
 }
 
-const updateEntryAccount = `-- name: UpdateEntryAccount :exec
+const updateEntryAccount = `-- name: UpdateEntryAccount :one
 UPDATE entries
 SET account_id = $2
 WHERE id = $1
+RETURNING id, account_id, amount, created_at
 `
 
 type UpdateEntryAccountParams struct {
@@ -115,15 +116,23 @@ type UpdateEntryAccountParams struct {
 	AccountID int64 `json:"account_id"`
 }
 
-func (q *Queries) UpdateEntryAccount(ctx context.Context, arg UpdateEntryAccountParams) error {
-	_, err := q.db.ExecContext(ctx, updateEntryAccount, arg.ID, arg.AccountID)
-	return err
+func (q *Queries) UpdateEntryAccount(ctx context.Context, arg UpdateEntryAccountParams) (Entry, error) {
+	row := q.db.QueryRowContext(ctx, updateEntryAccount, arg.ID, arg.AccountID)
+	var i Entry
+	err := row.Scan(
+		&i.ID,
+		&i.AccountID,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
-const updateEntryAmount = `-- name: UpdateEntryAmount :exec
+const updateEntryAmount = `-- name: UpdateEntryAmount :one
 UPDATE entries
 SET amount = $2
 WHERE id = $1
+RETURNING id, account_id, amount, created_at
 `
 
 type UpdateEntryAmountParams struct {
@@ -131,7 +140,14 @@ type UpdateEntryAmountParams struct {
 	Amount int64 `json:"amount"`
 }
 
-func (q *Queries) UpdateEntryAmount(ctx context.Context, arg UpdateEntryAmountParams) error {
-	_, err := q.db.ExecContext(ctx, updateEntryAmount, arg.ID, arg.Amount)
-	return err
+func (q *Queries) UpdateEntryAmount(ctx context.Context, arg UpdateEntryAmountParams) (Entry, error) {
+	row := q.db.QueryRowContext(ctx, updateEntryAmount, arg.ID, arg.Amount)
+	var i Entry
+	err := row.Scan(
+		&i.ID,
+		&i.AccountID,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
 }

@@ -17,15 +17,17 @@ ORDER BY created_at DESC
 LIMIT $2
 OFFSET $3;
 
--- name: UpdateEntryAccount :exec
+-- name: UpdateEntryAccount :one
 UPDATE entries
 SET account_id = $2
-WHERE id = $1;
+WHERE id = $1
+RETURNING *;
 
--- name: UpdateEntryAmount :exec
+-- name: UpdateEntryAmount :one
 UPDATE entries
 SET amount = $2
-WHERE id = $1;
+WHERE id = $1
+RETURNING *;
 
 -- name: DeleteEntry :exec
 DELETE FROM entries 
