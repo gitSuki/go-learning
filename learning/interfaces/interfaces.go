@@ -9,6 +9,7 @@ type bot interface {
 	// access all functions connected to the bot type interface
 	// interfaces don't have any direct utility on their own, we can't create an actual variable of
 	// type bot, it's just useful for sharing functionality among pre-existing structs
+	// interfaces are NOT generic types (generics)
 	getGreeting() string
 }
 
