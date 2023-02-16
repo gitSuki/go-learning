@@ -2,11 +2,13 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	db "github.com/gitsuki/simplebank/db/sqlc"
+	"github.com/gitsuki/simplebank/token"
 )
 
 type transferRequest struct {
@@ -25,6 +27,13 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 
 	fromAccount, isValid := server.validateAccount(ctx, req.FromAccountID, req.Currency)
 	if !isValid {
+		return
+	}
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if authPayload.Username != fromAccount.Owner {
+		err := errors.New("from account does not belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
