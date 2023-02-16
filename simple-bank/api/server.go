@@ -42,16 +42,23 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 
 func (server *Server) setupRouter() {
 	router := gin.Default()
+	server.publicRoutes(router)
+	server.protectedRoutes(router)
+	server.router = router
+}
+
+func (server *Server) publicRoutes(router *gin.Engine) {
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
+}
 
+func (server *Server) protectedRoutes(router *gin.Engine) {
 	router.POST("/accounts", server.createAccount)
 	router.GET("/accounts/:id", server.getAccount)
 	router.GET("/accounts/", server.listAccounts)
 	router.PUT("/account/", server.updateAccount)
 
 	router.POST("/transfers", server.createTransfer)
-	server.router = router
 }
 
 // Start runs the HTTP server on a specific address
