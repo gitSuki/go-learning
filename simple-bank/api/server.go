@@ -53,12 +53,13 @@ func (server *Server) publicRoutes(router *gin.Engine) {
 }
 
 func (server *Server) protectedRoutes(router *gin.Engine) {
-	router.POST("/accounts", server.createAccount)
-	router.GET("/accounts/:id", server.getAccount)
-	router.GET("/accounts/", server.listAccounts)
-	router.PUT("/account/", server.updateAccount)
+	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
+	authRoutes.POST("/accounts", server.createAccount)
+	authRoutes.GET("/accounts/:id", server.getAccount)
+	authRoutes.GET("/accounts/", server.listAccounts)
+	authRoutes.PUT("/account/", server.updateAccount)
 
-	router.POST("/transfers", server.createTransfer)
+	authRoutes.POST("/transfers", server.createTransfer)
 }
 
 // Start runs the HTTP server on a specific address
