@@ -1,21 +1,44 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gitsuki/simplebank/token"
 	"github.com/stretchr/testify/require"
 )
 
+func addAuthorization(
+	t *testing.T,
+	request *http.Request,
+	tokenMaker token.Maker,
+	authType string,
+	username string,
+	duration time.Duration,
+) {
+	token, err := tokenMaker.CreateToken(username, duration)
+	require.NoError(t, err)
+
+	authorizationHeader := fmt.Sprintf("%s %s", authType, token)
+	request.Header.Set(authorizationHeaderKey, authorizationHeader)
+}
+
 func TestAuthMiddleware(t *testing.T) {
 	testCases := []struct {
 		name          string
 		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
-	}{}
+	}{
+		{
+			name:          "OK",
+			setupAuth:     func(t *testing.T, request *http.Request, tokenMaker token.Maker) {},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {},
+		},
+	}
 
 	for i := range testCases {
 		tc := testCases[i]
