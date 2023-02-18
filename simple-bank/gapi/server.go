@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	db "github.com/gitsuki/simplebank/db/sqlc"
+	"github.com/gitsuki/simplebank/pb"
 	"github.com/gitsuki/simplebank/token"
 	"github.com/gitsuki/simplebank/util"
-	pb "github.com/techschool/simplebank/pb"
 )
 
 // Server serves gRPC requests for our banking service.
@@ -23,6 +23,7 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}
+
 	server := &Server{
 		config:     config,
 		store:      store,
