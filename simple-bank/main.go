@@ -4,13 +4,15 @@ import (
 	"database/sql"
 	"log"
 	"net"
+	"net/http"
 
-	"github.com/gitsuki/simplebank/api"
 	db "github.com/gitsuki/simplebank/db/sqlc"
 	"github.com/gitsuki/simplebank/gapi"
 	"github.com/gitsuki/simplebank/pb"
 	"github.com/gitsuki/simplebank/util"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	_ "github.com/lib/pq"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -27,6 +29,7 @@ func main() {
 	}
 
 	store := db.NewStore(conn)
+	go runHTTPReverseProxyServer(config, store)
 	runGrpcServer(config, store)
 }
 
@@ -52,14 +55,44 @@ func runGrpcServer(config util.Config, store db.Store) {
 	}
 }
 
-func runGinServer(config util.Config, store db.Store) {
-	server, err := api.NewServer(config, store)
+func runHTTPReverseProxyServer(config util.Config, store db.Store) {
+	server, err := gapi.NewServer(config, store)
 	if err != nil {
-		log.Fatal("Cannot create server", err)
+		log.Fatal("cannot create server:", err)
 	}
 
-	err = server.Start(config.HTTPServerAddress)
+	grpcMux := runtime.NewServeMux()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	err = pb.RegisterSimpleBankHandlerServer(ctx, grpcMux, server)
 	if err != nil {
-		log.Fatal("Cannot start server", err)
+		log.Fatal("cannot register handler server:", err)
+	}
+
+	listener, err := net.Listen("tcp", config.HTTPServerAddress)
+	if err != nil {
+		log.Fatal("cannot create listener:", err)
+	}
+
+	mux := http.NewServeMux()
+	mux.Handle("/", mux)
+
+	log.Printf("start HTTP reverse proxy server at %s", listener.Addr().String())
+	err = http.Serve(listener, grpcMux)
+	if err != nil {
+		log.Fatal("cannot start HTTP reverse proxy server")
 	}
 }
+
+// func runGinServer(config util.Config, store db.Store) {
+// 	server, err := api.NewServer(config, store)
+// 	if err != nil {
+// 		log.Fatal("Cannot create server", err)
+// 	}
+
+// 	err = server.Start(config.HTTPServerAddress)
+// 	if err != nil {
+// 		log.Fatal("Cannot start server", err)
+// 	}
+// }
