@@ -30,7 +30,7 @@ func main() {
 	}
 
 	store := db.NewStore(conn)
-	go runHTTPReverseProxyServer(config, store)
+	go runHTTPGatewayServer(config, store)
 	runGrpcServer(config, store)
 }
 
@@ -56,12 +56,13 @@ func runGrpcServer(config util.Config, store db.Store) {
 	}
 }
 
-func runHTTPReverseProxyServer(config util.Config, store db.Store) {
+func runHTTPGatewayServer(config util.Config, store db.Store) {
 	server, err := gapi.NewServer(config, store)
 	if err != nil {
 		log.Fatal("cannot create server:", err)
 	}
-	runtimeOptions := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+
+	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 		MarshalOptions: protojson.MarshalOptions{
 			UseProtoNames: true,
 		},
@@ -69,7 +70,9 @@ func runHTTPReverseProxyServer(config util.Config, store db.Store) {
 			DiscardUnknown: true,
 		},
 	})
-	grpcMux := runtime.NewServeMux(runtimeOptions)
+
+	grpcMux := runtime.NewServeMux(jsonOption)
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -78,18 +81,21 @@ func runHTTPReverseProxyServer(config util.Config, store db.Store) {
 		log.Fatal("cannot register handler server:", err)
 	}
 
+	mux := http.NewServeMux()
+	mux.Handle("/", grpcMux)
+
+	fs := http.FileServer(http.Dir("./docs/swagger"))
+	mux.Handle("/swagger/", http.StripPrefix("/swagger/", fs))
+
 	listener, err := net.Listen("tcp", config.HTTPServerAddress)
 	if err != nil {
 		log.Fatal("cannot create listener:", err)
 	}
 
-	mux := http.NewServeMux()
-	mux.Handle("/", mux)
-
-	log.Printf("start HTTP reverse proxy server at %s", listener.Addr().String())
-	err = http.Serve(listener, grpcMux)
+	log.Printf("start HTTP gateway server at %s", listener.Addr().String())
+	err = http.Serve(listener, mux)
 	if err != nil {
-		log.Fatal("cannot start HTTP reverse proxy server", err)
+		log.Fatal("cannot start HTTP gateway server:", err)
 	}
 }
 

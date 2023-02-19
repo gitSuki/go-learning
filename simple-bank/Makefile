@@ -33,11 +33,11 @@ mock:
 
 proto:
 	rm -f pb/*.go
-	rm -f docs/simple_bank_api.swagger.json 
+	rm -f docs/swagger/simple_bank_api.swagger.json 
 	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative \
 	--go-grpc_out=pb --go-grpc_opt=paths=source_relative \
 	--grpc-gateway_out=pb --grpc-gateway_opt paths=source_relative \
-	--openapiv2_out=docs/ --openapiv2_opt=allow_merge=true,merge_file_name=simple_bank_api \
+	--openapiv2_out=docs/swagger --openapiv2_opt=allow_merge=true,merge_file_name=simple_bank_api \
     proto/*.proto
 
 evans: 
