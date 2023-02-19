@@ -25,15 +25,34 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 		return nil, status.Errorf(codes.NotFound, "invalid password: %s", err)
 	}
 
-	accessToken, err := server.tokenMaker.CreateToken(user.Username, server.config.AccessTokenDuration)
+	accessToken, _, err := server.tokenMaker.CreateToken(user.Username, server.config.AccessTokenDuration)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create access token: %s", err)
 	}
 
+	refreshToken, _, err := server.tokenMaker.CreateToken(user.Username, server.config.RefreshTokenDuration)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to create refresh token: %s", err)
+	}
+
+	// session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
+	// 	ID:           refreshPayload.ID,
+	// 	Username:     user.Username,
+	// 	RefreshToken: refreshToken,
+	// 	UserAgent:    "",
+	// 	ClientIp:     "",
+	// 	IsBlocked:    false,
+	// 	ExpiresAt:    refreshPayload.ExpiredAt,
+	// 	CreatedAt:    refreshPayload.IssuedAt,
+	// })
+	// if err != nil {
+	// 	return nil, status.Errorf(codes.Internal, "failed to create session: %s", err)
+	// }
+
 	rsp := &pb.LoginUserResponse{
 		User:                  convertUser(user),
 		AccessToken:           accessToken,
-		RefreshToken:          "",
+		RefreshToken:          refreshToken,
 		SessionId:             "",
 		AccessTokenExpiresAt:  timestamppb.Now(),
 		RefreshTokenExpiresAt: timestamppb.Now(),
