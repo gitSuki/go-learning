@@ -27,10 +27,10 @@ func main() {
 	}
 
 	store := db.NewStore(conn)
-	runGrpcCServer(config, store)
+	runGinServer(config, store)
 }
 
-func runGrpcCServer(config util.Config, store db.Store) {
+func runGrpcServer(config util.Config, store db.Store) {
 	server, err := gapi.NewServer(config, store)
 	if err != nil {
 		log.Fatal("cannot create server:", err)
