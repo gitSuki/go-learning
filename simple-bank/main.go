@@ -25,7 +25,7 @@ func main() {
 
 	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
-		log.Fatal("Cannot connect to database")
+		log.Fatal("Cannot connect to database", err)
 	}
 
 	store := db.NewStore(conn)
@@ -51,7 +51,7 @@ func runGrpcServer(config util.Config, store db.Store) {
 	log.Printf("start gRPC server at %s", listener.Addr().String())
 	err = grpcServer.Serve(listener)
 	if err != nil {
-		log.Fatal("cannot start gRPC server")
+		log.Fatal("cannot start gRPC server", err)
 	}
 }
 
@@ -81,7 +81,7 @@ func runHTTPReverseProxyServer(config util.Config, store db.Store) {
 	log.Printf("start HTTP reverse proxy server at %s", listener.Addr().String())
 	err = http.Serve(listener, grpcMux)
 	if err != nil {
-		log.Fatal("cannot start HTTP reverse proxy server")
+		log.Fatal("cannot start HTTP reverse proxy server", err)
 	}
 }
 
