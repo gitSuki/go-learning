@@ -50,6 +50,7 @@ func (server *Server) setupRouter() {
 func (server *Server) publicRoutes(router *gin.Engine) {
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
+	router.POST("/tokens/renew_access", server.renewAccessToken)
 }
 
 func (server *Server) protectedRoutes(router *gin.Engine) {
