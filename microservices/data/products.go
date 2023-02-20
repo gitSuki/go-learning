@@ -28,8 +28,8 @@ type Products []*Product
 //
 // https://golang.org/pkg/encoding/json/#NewEncoder
 func (p *Products) ToJSON(w io.Writer) error {
-	e := json.NewEncoder(w)
-	return e.Encode(p)
+	encoder := json.NewEncoder(w)
+	return encoder.Encode(p)
 }
 
 // GetProducts returns a list of products
