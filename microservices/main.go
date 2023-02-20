@@ -9,19 +9,23 @@ import (
 	"time"
 
 	"github.com/gitsuki/microservices/handlers"
+	"github.com/nicholasjackson/env"
 )
 
-func main() {
-	customLog := log.New(os.Stdout, "product-api", log.LstdFlags)
-	helloHandler := handlers.NewHello(customLog)
-	goodbyeHandler := handlers.NewGoodbye(customLog)
+var bindAddress = env.String("BIND_ADDRESS", false, ":8000", "Bind address for the server")
 
+func main() {
+	env.Parse()
+
+	customLog := log.New(os.Stdout, "product-api", log.LstdFlags)
+
+	// create handlers and register them to servemux
+	productHandler := handlers.NewProducts(customLog)
 	serveMux := http.NewServeMux()
-	serveMux.Handle("/", helloHandler)
-	serveMux.Handle("/goodbye", goodbyeHandler)
+	serveMux.Handle("/", productHandler)
 
 	server := &http.Server{
-		Addr:         ":8000",
+		Addr:         *bindAddress,
 		Handler:      serveMux,
 		IdleTimeout:  120 * time.Second,
 		ReadTimeout:  1 * time.Second,
@@ -35,13 +39,16 @@ func main() {
 		}
 	}()
 
-	signalChannel := make(chan os.Signal)
+	// trap sigterm or interupt and gracefully shutdown the server
+	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, os.Interrupt)
 	signal.Notify(signalChannel, os.Kill)
 
+	// block until a signal is received.
 	sig := <-signalChannel
-	customLog.Println("Recieved terminate, graceful shutdown", sig)
+	customLog.Println("Recieved terminate, graceful shutdown. Got signal: ", sig)
 
+	// gracefully shutdown the server, waiting max 30 seconds for current operations to complete
 	timeoutCTX, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	server.Shutdown(timeoutCTX)
 }
