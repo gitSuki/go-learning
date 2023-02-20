@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/gitsuki/microservices/data"
 )
 
 type Products struct {
@@ -14,5 +17,11 @@ func NewProducts(l *log.Logger) *Products {
 }
 
 func (p *Products) ServeHTTP(rw http.ResponseWriter, h *http.Request) {
+	productsList := data.GetProducts()
+	data, err := json.Marshal(productsList)
+	if err != nil {
+		http.Error(rw, "unable to marshal json", http.StatusInternalServerError)
+	}
 
+	rw.Write(data)
 }
